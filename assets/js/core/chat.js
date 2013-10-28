@@ -257,6 +257,12 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
               $scope.send();
             }
             break;
+          // ESC
+          case 27:
+            if ($scope.autocompleteStyle.display === 'block') {
+              $scope.autocompleteText = ''; 
+            }
+            break;
           // Up
           case 38:
             event.preventDefault();
