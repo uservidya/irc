@@ -94,11 +94,11 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
       }
     };
   }])
-  .controller('Login', [ '$scope', '$location', 'Emitter', 'IRC', 
-    function ($scope, $location, Emitter, IRC) {
+  .controller('Login', [ '$scope', '$location', '$emitter', 'IRC', 
+    function ($scope, $location, $emitter, IRC) {
 
       $scope.login = function () {
-        Emitter.clear();
+        $emitter.clear();
         IRC.init($scope.server, $scope.user, [ $scope.room ]);
         if($scope.nickserv !== ''){
           IRC.setNickserv($scope.nickserv);
@@ -109,8 +109,8 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
         }
       }
     }])
-  .controller('Chat', [ '$scope', '$location', 'Emitter', 'IRC',
-    function ($scope, $location, Emitter, IRC) {
+  .controller('Chat', [ '$scope', '$location', '$emitter', 'IRC',
+    function ($scope, $location, $emitter, IRC) {
       if (!IRC.isInit) {
         $location.path('/login');
       }
@@ -121,18 +121,18 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
       var mentionCount = 0;
 
       // All listeners are here.
-      Emitter.on('self.join', function (data) {
+      $emitter.on('self.join', function (data) {
         $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joined ' + IRC.room }); 
       });
-      Emitter.on('join', function (data) {
+      $emitter.on('join', function (data) {
         $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), user: data.user, text: data.user + ' joined the room' }); 
         $scope.members[data.user] = '';
       });
-      Emitter.on(['part', 'quit'], function (data) {
+      $emitter.on(['part', 'quit'], function (data) {
         $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), user: data.user, text: data.user + ' left the room' }); 
         delete $scope.members[data.user];
       });
-      Emitter.on(['message', 'send'], function (data) {
+      $emitter.on(['message', 'send'], function (data) {
         // Mention
         if(data.from !== IRC.user && S(data.message).contains(IRC.user)){
           data.mention = true;
@@ -150,19 +150,19 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
           $scope.messages.push({ type: 'message', time: moment(new Date()).format('hh:mm'), user: data.from, text: data.message, mention: data.mention }); 
         }
       });
-      Emitter.on('names', function (data) {
+      $emitter.on('names', function (data) {
         $scope.members = data.users;
       });
-      Emitter.on('nick', function (data) {
+      $emitter.on('nick', function (data) {
         var value = $scope.members[data.oldname];
         delete $scope.members[data.oldname];
         $scope.members[data.newname] = value;
       });
-      Emitter.on('topic', function (data) {
+      $emitter.on('topic', function (data) {
         $scope.topic = data.topic;
         $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Topic: ' + data.topic + ' set by ' + data.nick });
       });
-      Emitter.on('postdata', function () {
+      $emitter.on('postdata', function () {
         $scope.$apply();
       });
 

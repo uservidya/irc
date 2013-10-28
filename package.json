@@ -16,18 +16,14 @@
     "q": "~0.9.7"
   },
   "devDependencies": {
-    "chai": "1.5.x",
-    "sinon": "1.6.x",
-    "sinon-chai": "2.3.x",
-    "chai-as-promised": "3.2.x",
-    "mocha-as-promised": "1.2.x",
-    "mocha": "1.x"
+    "karma": "~0.8"
   },
   "engines": {
     "node": "0.10.x",
     "npm": "1.x"
   },
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "test": "./node_modules/.bin/karma start --no-auto-watch --single-run --browsers PhantomJS"
   }
 }

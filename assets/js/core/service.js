@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module('Services', [])
-  .factory('Emitter', function () {
+  .factory('$emitter', function () {
     var Emitter = function () {
 
       var _events = {};
@@ -30,7 +30,7 @@ angular.module('Services', [])
     }
     return new Emitter;
   })
-  .factory('Message', function () {
+  .factory('$message', function () {
     var Message = function (room, message) {
       var _room = room;
       var _message = S(message).trim().s;
@@ -55,9 +55,13 @@ angular.module('Services', [])
       });
     }
 
+    Message.$new = function (room, message) {
+      return new Message(room, message);
+    }
+
     return Message;
   })
-  .factory('IRC', [ 'Emitter', 'Message', function (Emitter, Message) {
+  .factory('IRC', [ '$emitter', '$message', function ($emitter, $message) {
     var IRC = function () {
       var _server = '';
       var _user = '';
@@ -73,7 +77,7 @@ angular.module('Services', [])
               _user = data.user;
               _isJoined = true;
               // Special case for self join. Other command that has user maybe use the same pattern.
-              Emitter.emit('self.join', data);
+              $emitter.emit('self.join', data);
               return;
             }
             break;
@@ -84,8 +88,8 @@ angular.module('Services', [])
             break;
         }
 
-        Emitter.emit(data.action, data);
-        Emitter.emit('postdata');
+        $emitter.emit(data.action, data);
+        $emitter.emit('postdata');
       });
 
 
@@ -134,10 +138,10 @@ angular.module('Services', [])
       }
 
       this.send = function (text) {
-        var data = new Message(this.room, text).data;
+        var data = $message.$new(this.room, text).data;
         primus.write(data);
         if (data.action === 'say') {
-          Emitter.emit('send', { from: _user, room: this.room, message: data.message });
+          $emitter.emit('send', { from: _user, room: this.room, message: data.message });
         }
       }
 
