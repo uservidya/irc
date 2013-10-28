@@ -42,12 +42,13 @@ angular.module('Services', [])
       Object.defineProperty(this, 'data', {
         get: function () {
           if (_isCommand()) {
-            return { action: 'command', arguments: message.split(' ') };
+            return { action: 'command', arguments: _message.split(' ') };
           }
           else {
             //Replace me as action
-            if (S(_message).startsWith('/me')) {
-              _message = '\u0001ACTION ' + _message.replace(/^\/me /, '') + '\u0001';
+            var message = _message;
+            if (S(message).startsWith('/me')) {
+              message = '\u0001ACTION ' + message.replace(/^\/me /, '') + '\u0001';
             }
             return { action: 'say', room: _room, message: message };
           }
