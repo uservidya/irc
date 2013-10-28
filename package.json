@@ -1,5 +1,5 @@
 {
-  "name": "pubsub",
+  "name": "irc",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
@@ -16,7 +16,7 @@
     "q": "~0.9.7"
   },
   "devDependencies": {
-    "karma": "~0.8"
+    "karma": "~0.10"
   },
   "engines": {
     "node": "0.10.x",
