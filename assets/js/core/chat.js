@@ -98,11 +98,12 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
     function ($scope, $location, Emitter, IRC) {
 
       var sharedEmitter = Emitter.shared;
+      var sharedIRC = IRC.shared;
       $scope.login = function () {
         sharedEmitter.clear();
-        IRC.init($scope.server, $scope.user, [ $scope.room ]);
+        sharedIRC.init($scope.server, $scope.user, [ $scope.room ]);
         if($scope.nickserv !== ''){
-          IRC.setNickserv($scope.nickserv);
+          sharedIRC.setNickserv($scope.nickserv);
         }
         $location.path('/chat');
         if(notify.permissionLevel() !== notify.PERMISSION_GRANTED){
@@ -112,19 +113,20 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
     }])
   .controller('Chat', [ '$scope', '$location', 'Emitter', 'IRC',
     function ($scope, $location, Emitter, IRC) {
-      if (!IRC.isInit) {
+      var sharedIRC = IRC.shared;
+      if (!sharedIRC.isInit) {
         $location.path('/login');
       }
-      document.title = IRC.room;
+      document.title = sharedIRC.room;
 
-      $scope.room = IRC.room;
+      $scope.room = sharedIRC.room;
       $scope.topic = 'Connecting...';
       var mentionCount = 0;
 
       // All listeners are here.
       var sharedEmitter = Emitter.shared;
       sharedEmitter.on('self.join', function (data) {
-        $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joined ' + IRC.room }); 
+        $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joined ' + sharedIRC.room }); 
       });
       sharedEmitter.on('join', function (data) {
         $scope.messages.push({ type: 'command', time: moment(new Date()).format('hh:mm'), user: data.user, text: data.user + ' joined the room' }); 
@@ -136,9 +138,9 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
       });
       sharedEmitter.on(['message', 'send'], function (data) {
         // Mention
-        if(data.from !== IRC.user && S(data.message).contains(IRC.user)){
+        if(data.from !== sharedIRC.user && S(data.message).contains(sharedIRC.user)){
           data.mention = true;
-          notify.createNotification('Mention from ' + data.from + ' in ' + IRC.room, {
+          notify.createNotification('Mention from ' + data.from + ' in ' + sharedIRC.room, {
             body: data.from + ': ' + data.message,
             icon: '/assets/img/icon.png' // required
           });
@@ -169,13 +171,13 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
       });
 
       // All scope vairables are here.
-      $scope.room = IRC.room;
+      $scope.room = sharedIRC.room;
       $scope.autocompleteText = '';
       $scope.autocompleteIndex = 0;
       $scope.autocompleteStyle = '';
       $scope.members = {};
       $scope.messages = [
-        { type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joining ' + IRC.room }
+        { type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joining ' + sharedIRC.room }
       ];
 
       $scope.$watchCollection('messages', function () {
@@ -207,9 +209,9 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
 
       // Initial messages
       $scope.messages = [
-        { type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joining ' + IRC.room }
+        { type: 'command', time: moment(new Date()).format('hh:mm'), text: 'Joining ' + sharedIRC.room }
       ];
-      document.title = IRC.room;
+      document.title = sharedIRC.room;
       $scope.members = {};
       $scope.fillname = function (name) {
         $scope.message = name + ', ';
@@ -227,7 +229,7 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
         if($scope.message.length === 0){
           return;
         }
-        IRC.send($scope.message);
+        sharedIRC.send($scope.message);
         $scope.message = '';
       }
       $scope.keydown = function (event) {
@@ -290,7 +292,7 @@ angular.module('chat', [ 'ngRoute', 'Services' ])
 
 
       // Connect to the server
-      IRC.connect();
+      sharedIRC.connect();
 
     }]);
   

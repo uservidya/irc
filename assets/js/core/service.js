@@ -148,7 +148,6 @@ angular.module('Services', [])
       }
 
     }
-
-    var _instance = new IRC;
-    return _instance;
+    IRC.shared = new IRC;
+    return IRC;
   }]);
