@@ -1,12 +1,12 @@
 'use strict'
 
-describe('$message', function () {
+describe('Message', function () {
 
   beforeEach(module('Services'));
 
   var Message;
-  beforeEach(inject(function ($message) {
-    Message = $message;
+  beforeEach(inject(function ($injector) {
+    Message = $injector.get('Message');
   }));
 
   it ('should set /nick data action as command', function () {

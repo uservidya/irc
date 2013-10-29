@@ -1,7 +1,7 @@
 'use strict'
 
 angular.module('Services', [])
-  .factory('$emitter', function () {
+  .factory('Emitter', function () {
     var Emitter = function () {
 
       var _events = {};
@@ -28,9 +28,10 @@ angular.module('Services', [])
       }
 
     }
-    return new Emitter;
+    Emitter.shared = new Emitter;
+    return Emitter;
   })
-  .factory('$message', function () {
+  .factory('Message', function () {
     var Message = function (room, message) {
       var _room = room;
       var _message = S(message).trim().s;
@@ -56,21 +57,21 @@ angular.module('Services', [])
       });
     }
 
-    Message.$new = function (room, message) {
-      return new Message(room, message);
-    }
-
     return Message;
   })
-  .factory('IRC', [ '$emitter', '$message', function ($emitter, $message) {
+  .factory('Connection', function () {
+    return Primus;
+  })
+  .factory('IRC', [ 'Emitter', 'Message', 'Connection', function (Emitter, Message, Connection) {
     var IRC = function () {
       var _server = '';
       var _user = '';
       var _rooms = [];
       var _isJoined = false;
       var _nickserv = null;
-      
-      var primus = Primus.connect();
+     
+      var sharedEmitter = Emitter.shared;
+      var primus = Connection.connect();
       primus.on('data', function (data) {
         switch (data.action) {
           case 'join':
@@ -78,7 +79,7 @@ angular.module('Services', [])
               _user = data.user;
               _isJoined = true;
               // Special case for self join. Other command that has user maybe use the same pattern.
-              $emitter.emit('self.join', data);
+              sharedEmitter.emit('self.join', data);
               return;
             }
             break;
@@ -89,8 +90,8 @@ angular.module('Services', [])
             break;
         }
 
-        $emitter.emit(data.action, data);
-        $emitter.emit('postdata');
+        sharedEmitter.emit(data.action, data);
+        sharedEmitter.emit('postdata');
       });
 
 
@@ -139,10 +140,10 @@ angular.module('Services', [])
       }
 
       this.send = function (text) {
-        var data = $message.$new(this.room, text).data;
+        var data = (new Message(this.room, text)).data;
         primus.write(data);
         if (data.action === 'say') {
-          $emitter.emit('send', { from: _user, room: this.room, message: data.message });
+          sharedEmitter.emit('send', { from: _user, room: this.room, message: data.message });
         }
       }
 

@@ -1,12 +1,12 @@
 'use strict'
 
-describe('$emitter', function () {
+describe('Emitter', function () {
 
   beforeEach(module('Services'));
 
   var emitter;
-  beforeEach(inject(function ($emitter) {
-    emitter = $emitter;
+  beforeEach(inject(function (Emitter) {
+    emitter = new Emitter;
   }));
 
   it ('should call function that registers to', function () {
